@@ -32,7 +32,11 @@ const PORT = process.env.PORT || 10000;
 let state = store.load();
 if (!state || !state.policy) {
   state = {
-    policy: { ...policyEngine.DEFAULT_POLICY, salt: crypto.randomInt(1, 2 ** 31) },
+    // Fixed salt for the built-in default policy only: its terms are
+    // public (README), and a deterministic salt keeps the boot
+    // commitment stable across free-tier restarts. Policies sealed by
+    // an owner through /api/policy always get a fresh random salt.
+    policy: { ...policyEngine.DEFAULT_POLICY, salt: 20261119 },
     commitment: null,
     vkHash: null,
     audit: [],

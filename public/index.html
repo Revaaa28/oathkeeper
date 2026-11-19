@@ -366,7 +366,8 @@ async function loadState(){
 
 async function loadAudit(){
   try{
-    const rows = await (await fetch("/api/audit")).json();
+    const data = await (await fetch("/api/audit")).json();
+    const rows = data.entries || [];
     if(!rows.length) return;
     $("auditBody").innerHTML = rows.map(r => {
       const k = r.kurier || {};
@@ -471,8 +472,8 @@ $("revealBtn").addEventListener("click", async () => {
     const r = await (await fetch("/api/reveal", {method:"POST"})).json();
     if(r.error) throw new Error(r.error);
     $("revealOut").innerHTML =
-      "The sealed policy was: cap <b>" + money(r.policy.limitCents) + "</b> per transaction; forbidden: <b>" +
-      (r.policy.blockedCategories.length ? r.policy.blockedCategories.join(", ") : "none") + "</b>.<br>" +
+      "The sealed policy was: cap <b>$" + Number(r.limitUsd).toFixed(2) + "</b> per transaction; forbidden: <b>" +
+      (r.blockedCategories.length ? r.blockedCategories.join(", ") : "none") + "</b>.<br>" +
       'Commitment <span class="mono">' + r.commitment + '</span> — recompute Poseidon(cap, block list, salt) from the source and it matches. Every verdict in the ledger follows from exactly these rules.';
     $("revealOut").classList.add("show");
   }catch(e){ alert("Reveal failed: " + e.message); }
