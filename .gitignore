@@ -1,0 +1,11 @@
+node_modules/
+data/
+.env
+*.log
+
+# Powers-of-tau and intermediate ceremony files are build-time only
+# (regenerate with scripts/build-circuit.sh). The final proving key,
+# wasm, and verification key ARE committed: the live agent needs them.
+circuits/build/*.ptau
+circuits/build/oathkeeper_0000.zkey
+circuits/build/oathkeeper.sym

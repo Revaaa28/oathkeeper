@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OATHKEEPER — the agent that proves it obeyed you</title>
+<style>
+  :root{
+    --bg:#0b0e14; --card:#121722; --card2:#171e2e; --line:#232c42;
+    --text:#e8ecf4; --muted:#93a0b8; --accent:#7c5cff; --accent2:#00d4a6;
+    --allow:#00d4a6; --block:#ff5470; --warn:#ffb84d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:ui-sans-system,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:980px;margin:0 auto;padding:28px 18px 60px}
+  header{text-align:center;padding:26px 0 8px}
+  .logo{font-size:15px;letter-spacing:.35em;color:var(--accent2);font-weight:700}
+  h1{font-size:52px;margin:6px 0 4px;letter-spacing:.04em}
+  .tag{font-size:19px;color:var(--text);margin:0}
+  .tag b{color:var(--accent2)}
+  .sub{color:var(--muted);max-width:640px;margin:10px auto 0;line-height:1.55}
+  .commit{margin:18px auto 0;max-width:720px;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:12px 16px;font-size:13px;color:var(--muted);word-break:break-all}
+  .commit b{color:var(--text)}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:22px 0}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .step .n{color:var(--accent);font-weight:800;font-size:13px;letter-spacing:.1em}
+  .step p{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
+  .step p b{color:var(--text)}
+  section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+  section h2{margin:0 0 4px;font-size:20px}
+  section .hint{color:var(--muted);font-size:14px;margin:0 0 14px;line-height:1.5}
+  label{font-size:13px;color:var(--muted);display:block;margin:10px 0 6px}
+  input[type=number],select{width:100%;background:var(--card2);border:1px solid var(--line);
+    color:var(--text);border-radius:10px;padding:11px 12px;font-size:16px}
+  .checks{display:flex;flex-wrap:wrap;gap:8px}
+  .checks label{display:flex;align-items:center;gap:7px;background:var(--card2);border:1px solid var(--line);
+    border-radius:999px;padding:8px 13px;margin:0;cursor:pointer;color:var(--text);font-size:14px}
+  button{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:12px 18px;
+    font-size:15px;font-weight:700;cursor:pointer}
+  button:hover{filter:brightness(1.12)}
+  button.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+  button.small{padding:8px 12px;font-size:13px}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:700px){.row,.steps{grid-template-columns:1fr}h1{font-size:38px}}
+  .result{display:none;margin-top:16px;border-radius:12px;padding:18px;border:1px solid var(--line);background:var(--card2)}
+  .result.show{display:block}
+  .decision{font-size:34px;font-weight:900;letter-spacing:.03em}
+  .decision.allow{color:var(--allow)} .decision.block{color:var(--block)}
+  .rule{color:var(--muted);font-size:13px;margin-top:2px}
+  .reason{margin:8px 0 0;line-height:1.55}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .badge{font-size:12.5px;border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--muted)}
+  .badge b{color:var(--accent2)} .badge .pending{color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600}
+  .chip{font-weight:800;font-size:12px;padding:3px 9px;border-radius:999px}
+  .chip.allow{background:rgba(0,212,166,.15);color:var(--allow)}
+  .chip.block{background:rgba(255,84,112,.15);color:var(--block)}
+  a{color:var(--accent2)}
+  .signals{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;word-break:break-all;color:var(--muted)}
+  .signals b{color:var(--text)}
+  .sealed-note{display:none;margin-top:12px;color:var(--accent2);font-size:14px}
+  footer{color:var(--muted);text-align:center;font-size:13px;margin-top:26px;line-height:1.6}
+  .err{color:var(--block);font-size:14px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">ZKVERIFY AGENT GAMES · WILDCARD</div>
+    <h1>OATHKEEPER</h1>
+    <p class="tag">The agent that <b>proves it obeyed you</b> — without revealing your rules.</p>
+    <p class="sub">Give an AI agent a wallet and it needs rules: a spending cap, a block list.
+      Publish the rules and attackers game them. Hide them and nobody can trust the agent obeyed.
+      OATHKEEPER seals the rules into a cryptographic commitment — and proves every decision against it.</p>
+    <div class="commit">Sealed policy commitment (Poseidon, public):<br><b id="commitment">loading…</b></div>
+  </header>
+
+  <div class="steps">
+    <div class="step"><div class="n">STEP 1 · SEAL</div><p>The owner sets a <b>private cap + block list</b>. Only a hash commitment is published. The rules themselves never leave the server.</p></div>
+    <div class="step"><div class="n">STEP 2 · DECIDE</div><p>A deterministic policy engine — not the LLM — answers <b>ALLOW</b> or <b>BLOCK</b> for every proposed transaction, citing the rule that fired.</p></div>
+    <div class="step"><div class="n">STEP 3 · PROVE</div><p>Every decision ships with a <b>Groth16 zero-knowledge proof</b>, verified on zkVerify via Kurier: the decision is exactly the one the sealed policy dictates.</p></div>
+  </div>
+
+  <section>
+    <h2>1 · Owner console — seal your rules</h2>
+    <p class="hint">You are the owner. Set a per-transaction cap and block some categories.
+      After sealing, this page forgets them — try to find them in any API response or proof below.</p>
+    <div class="row">
+      <div>
+        <label for="cap">Private per-transaction cap (USD)</label>
+        <input type="number" id="cap" value="50" min="1" step="1">
+      </div>
+      <div>
+        <label>Private block list</label>
+        <div class="checks" id="blockChecks"></div>
+      </div>
+    </div>
+    <p style="margin:16px 0 0"><button id="sealBtn">Seal the policy</button></p>
+    <div class="sealed-note" id="sealedNote">Sealed. The cap and block list are gone from this page — only the commitment above remains public. The audit log was reset for the new oath.</div>
+    <div class="err" id="sealErr"></div>
+  </section>
+
+  <section>
+    <h2>2 · Attacker console — try to break the oath</h2>
+    <p class="hint">Now be the attacker (or a careless agent). Propose any transaction.
+      You do not know the cap. You do not know the block list. Watch the proof.</p>
+    <div class="presets">
+      <button class="ghost small" data-preset='{"amount":30,"category":"groceries"}'>$30 groceries</button>
+      <button class="ghost small" data-preset='{"amount":60,"category":"groceries"}'>$60 groceries</button>
+      <button class="ghost small" data-preset='{"amount":10,"category":"gambling"}'>$10 gambling</button>
+      <button class="ghost small" data-preset='{"amount":20,"category":"subscriptions"}'>$20 subscription</button>
+      <button class="ghost small" data-preset='{"amount":49.99,"category":"games"}'>$49.99 games</button>
+    </div>
+    <div class="row">
+      <div>
+        <label for="amount">Amount (USD)</label>
+        <input type="number" id="amount" value="30" min="0.01" step="0.01">
+      </div>
+      <div>
+        <label for="category">Category</label>
+        <select id="category"></select>
+      </div>
+    </div>
+    <p style="margin:16px 0 0"><button id="evalBtn">Ask the agent</button></p>
+    <div class="err" id="evalErr"></div>
+
+    <div class="result" id="result">
+      <div class="decision" id="rDecision"></div>
+      <div class="rule" id="rRule"></div>
+      <p class="reason" id="rReason"></p>
+      <div class="badges">
+        <span class="badge">Groth16 proof: <b id="rLocal">—</b></span>
+        <span class="badge">zkVerify via Kurier: <b id="rKurier">—</b></span>
+        <span class="badge"><a href="#" id="rProofLink" target="_blank" rel="noopener">Inspect the proof yourself</a></span>
+      </div>
+      <p class="signals" id="rSignals" style="margin-top:14px"></p>
+      <p class="hint" style="margin-top:8px">Those four public signals are everything the world learns.
+        The cap, the block list and the salt are <b>not among them</b> — yet the proof only verifies if the decision obeys them.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>3 · Audit log — every decision, every proof</h2>
+    <p class="hint">Anyone can re-verify any proof here against the public verification key
+      (<a href="/api/vkey" target="_blank" rel="noopener">/api/vkey</a>) with plain snarkjs. No trust in this server required.</p>
+    <table>
+      <thead><tr><th>Time</th><th>Transaction</th><th>Decision</th><th>Rule</th><th>Proof</th><th>zkVerify</th></tr></thead>
+      <tbody id="auditBody"><tr><td colspan="6" style="color:var(--muted)">No decisions yet.</td></tr></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>4 · Owner reveal — judges, check our honesty</h2>
+    <p class="hint">Finished attacking? Reveal the sealed policy and confirm it matches everything
+      the agent did — and that none of it appeared in a proof or an API response before this moment.</p>
+    <button class="ghost" id="revealBtn">Reveal the sealed policy</button>
+    <p id="revealOut" style="line-height:1.6"></p>
+  </section>
+
+  <footer>
+    OATHKEEPER · Circom 2 + Groth16/BN128 + snarkjs · proofs verified on zkVerify via Kurier<br>
+    Built for the zkVerify Agent Games — Wildcard track · #AgentGames
+  </footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let categories = [];
+
+async function loadState() {
+  const s = await (await fetch('/api/state')).json();
+  $('commitment').textContent = s.commitment || '—';
+  categories = s.categories;
+  const sel = $('category');
+  sel.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
+  const checks = $('blockChecks');
+  checks.innerHTML = categories.map(c =>
+    `<label><input type="checkbox" value="${c}" ${['gambling','subscriptions'].includes(c) ? 'checked' : ''}> ${c}</label>`).join('');
+}
+
+async function loadAudit() {
+  const a = await (await fetch('/api/audit')).json();
+  const body = $('auditBody');
+  if (!a.entries.length) {
+    body.innerHTML = '<tr><td colspan="6" style="color:var(--muted)">No decisions yet.</td></tr>';
+    return;
+  }
+  body.innerHTML = a.entries.map(e => `
+    <tr>
+      <td>${new Date(e.ts).toLocaleTimeString()}</td>
+      <td>$${(e.amountCents/100).toFixed(2)} · ${e.category}</td>
+      <td><span class="chip ${e.decision === 'ALLOW' ? 'allow' : 'block'}">${e.decision}</span></td>
+      <td>${e.rule}</td>
+      <td>${e.verifiedLocally ? '<b style="color:var(--accent2)">verified</b>' : '—'} · <a href="${e.proofUrl}" target="_blank" rel="noopener">proof</a></td>
+      <td>${e.kurier ? (e.kurier.status || 'pending') : 'pending'}</td>
+    </tr>`).join('');
+}
+
+$('sealBtn').addEventListener('click', async () => {
+  $('sealErr').textContent = '';
+  const blockedCategories = [...document.querySelectorAll('#blockChecks input:checked')].map(i => i.value);
+  const res = await fetch('/api/policy', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ limitUsd: Number($('cap').value), blockedCategories }),
+  });
+  const data = await res.json();
+  if (!res.ok) { $('sealErr').textContent = data.error || 'seal failed'; return; }
+  $('commitment').textContent = data.commitment;
+  $('cap').value = '';
+  document.querySelectorAll('#blockChecks input').forEach(i => i.checked = false);
+  $('sealedNote').style.display = 'block';
+  $('result').classList.remove('show');
+  await loadAudit();
+});
+
+document.querySelectorAll('[data-preset]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const p = JSON.parse(btn.dataset.preset);
+    $('amount').value = p.amount;
+    $('category').value = p.category;
+    $('evalBtn').click();
+  });
+});
+
+$('evalBtn').addEventListener('click', async () => {
+  $('evalErr').textContent = '';
+  $('evalBtn').textContent = 'Proving…';
+  $('evalBtn').disabled = true;
+  try {
+    const res = await fetch('/api/evaluate', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ amountUsd: Number($('amount').value), category: $('category').value }),
+    });
+    const e = await res.json();
+    if (!res.ok) throw new Error(e.error || 'evaluate failed');
+    $('result').classList.add('show');
+    const d = $('rDecision');
+    d.textContent = e.decision;
+    d.className = 'decision ' + (e.decision === 'ALLOW' ? 'allow' : 'block');
+    $('rRule').textContent = 'rule: ' + e.rule;
+    $('rReason').textContent = e.reason;
+    $('rLocal').textContent = e.verifiedLocally ? 'generated + locally verified' : 'FAILED';
+    const k = e.kurier || {};
+    $('rKurier').innerHTML = k.status === 'not_configured'
+      ? '<span class="pending">local proof ready — Kurier key not configured on this demo instance</span>'
+      : (k.status || 'pending');
+    $('rProofLink').href = e.proofUrl;
+    const s = e.publicSignals;
+    $('rSignals').innerHTML =
+      `public signals → amount: <b>${s[0]} cents</b> · category code: <b>${s[1]}</b> · decision: <b>${s[2]}</b> · commitment: <b>${String(s[3]).slice(0, 32)}…</b>`;
+    await loadAudit();
+  } catch (err) {
+    $('evalErr').textContent = String(err.message || err);
+  } finally {
+    $('evalBtn').textContent = 'Ask the agent';
+    $('evalBtn').disabled = false;
+  }
+});
+
+$('revealBtn').addEventListener('click', async () => {
+  const r = await (await fetch('/api/reveal', { method: 'POST' })).json();
+  $('revealOut').innerHTML =
+    `The sealed policy was: cap <b>$${Number(r.limitUsd).toFixed(2)}</b> per transaction, ` +
+    `blocked categories: <b>${r.blockedCategories.length ? r.blockedCategories.join(', ') : '(none)'}</b>.<br>` +
+    `<span style="color:var(--muted)">${r.note}</span>`;
+});
+
+loadState().then(loadAudit);
+setInterval(loadAudit, 15000);
+</script>
+</body>
+</html>
