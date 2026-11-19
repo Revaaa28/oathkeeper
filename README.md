@@ -1,6 +1,10 @@
+<p align="center"><img src="assets/logo/oathkeeper-lockup-1800.png" width="620" alt="OATHKEEPER — proof of obedience"></p>
+
 # OATHKEEPER
 
 **The agent that can prove it obeyed you — without revealing your rules.**
+
+**Live demo: [oathkeeper-3btp.onrender.com](https://oathkeeper-3btp.onrender.com)** — seal a policy, try to break it, watch the proof.
 
 Built for the [zkVerify Agent Games](https://agentgames.zkverify.io/) — Wildcard track.
 
