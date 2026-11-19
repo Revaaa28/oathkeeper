@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 240" width="1000" height="240">
+<g><circle cx="120" cy="120" r="102" fill="none" stroke="#D9A441" stroke-width="10"/>
+<path d="M95 76 V164" stroke="#D9A441" stroke-width="13" stroke-linecap="round"/>
+<path d="M140 80 L99 118" stroke="#F0BE5C" stroke-width="12" stroke-linecap="round"/>
+<path d="M104 122 L144 164" stroke="#F0BE5C" stroke-width="12" stroke-linecap="round"/></g>
+<text x="282" y="117" font-family="Marcellus, Georgia, serif" font-size="62" letter-spacing="13" fill="#0C1425">OATHKEEPER</text>
+<text x="286" y="158" font-family="'IBM Plex Mono', monospace" font-size="20.5" letter-spacing="6.5" fill="#5B6B8C">PROOF OF OBEDIENCE</text>
+</svg>
