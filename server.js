@@ -25,6 +25,7 @@ const policyEngine = require('./src/policy');
 const prover = require('./src/prover');
 const kurier = require('./src/kurier');
 const store = require('./src/store');
+const agentgames = require('./src/agentgames');
 
 const PORT = process.env.PORT || 10000;
 
@@ -81,6 +82,15 @@ async function submitToKurier(entry) {
 
 // ------------------------------------------------------------------ app
 const app = express();
+
+// Agent Games platform endpoint. The platform signs requests over the
+// RAW body, so these routes take express.raw() and are registered
+// BEFORE the JSON parser. The agent is registered with the bare domain,
+// so POST / is handled identically to POST /agent.
+const agentRaw = express.raw({ type: '*/*', limit: '256kb' });
+app.post('/agent', agentRaw, agentgames.handleAgentPost);
+app.post('/', agentRaw, agentgames.handleAgentPost);
+
 app.use(express.json({ limit: '256kb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -101,7 +111,10 @@ function publicAuditEntry(e) {
   };
 }
 
-app.get('/health', (req, res) => res.json({ ok: true, service: 'oathkeeper' }));
+// Agent Games health check: the platform requires EXACTLY this shape.
+// (The OATHKEEPER demo's own state lives at /api/state.)
+app.get('/health', (req, res) =>
+  agentgames.sendSigned(res, agentgames.getSecret(), 200, { ok: true, protocolVersion: 'v1' }));
 
 app.get('/api/state', async (req, res) => {
   if (!state.commitment) await refreshCommitment();
@@ -220,5 +233,6 @@ app.post('/api/reveal', (req, res) => {
     console.log(`OATHKEEPER listening on :${PORT}`);
     console.log(`policy commitment: ${state.commitment}`);
     console.log(`kurier configured: ${kurier.configured()} (${kurier.API_URL})`);
+    console.log(`agent games endpoint: ${agentgames.getSecret() ? 'armed (HMAC secret set)' : 'unarmed — /agent answers 401 until AGENT_GAMES_HMAC_SECRET is set'}`);
   });
 })();
