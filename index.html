@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OATHKEEPER — proved, not promised</title>
+<meta name="description" content="OATHKEEPER seals an owner's private rules into a cryptographic commitment and proves every agent decision against it with a Groth16 proof verified on zkVerify. The verdict is public. The rules never are.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A101E; --ink-2:#0C1425; --ink-3:#070C16;
+    --paper:#EDE6D6; --paper-dim:#D8D2C2;
+    --taupe:#A79B8A; --slate:#7E8AA5;
+    --line:rgba(237,230,214,.14); --line-soft:rgba(237,230,214,.08);
+    --gold:#D9A441; --gold-2:#F0BE5C; --gold-line:rgba(217,164,65,.38);
+    --allow:#6FBF8A; --block:#E0684F;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--ink); color:var(--paper);
+    font-family:Archivo,system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:15.5px; line-height:1.55;
+  }
+  ::selection{background:var(--gold); color:#14100A}
+  a{color:var(--gold-2)}
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible{outline:2px solid var(--gold-2); outline-offset:2px}
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .wrap{max-width:1140px; margin:0 auto; padding:0 22px 0}
+
+  /* ————— masthead ————— */
+  header.top{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:14px 0 12px; border-bottom:1px solid var(--line);
+  }
+  .wordmark{display:flex; align-items:center; gap:11px; font-weight:800; font-size:16.5px; letter-spacing:.24em}
+  .wordmark img{width:31px; height:31px; display:block}
+  .top-right{display:flex; align-items:center; gap:18px}
+  .top-meta{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.22em; color:var(--slate)}
+  @media (max-width:640px){ .top-meta{display:none} }
+  .live-dot{display:inline-flex; align-items:center; gap:7px; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.08em; color:var(--taupe)}
+  .live-dot .dot{width:7px; height:7px; border-radius:50%; background:var(--allow); box-shadow:0 0 0 3px rgba(111,191,138,.16)}
+  .live-dot .dot.warm{background:var(--gold); box-shadow:0 0 0 3px rgba(217,164,65,.16)}
+
+  /* ————— hero ————— */
+  .hero{position:relative; padding:64px 0 0; overflow:visible}
+  .ghostword{
+    position:absolute; top:2px; left:-8px; z-index:0; pointer-events:none; user-select:none;
+    font-weight:800; font-size:clamp(120px,22.5vw,290px); line-height:.92; letter-spacing:.005em; white-space:nowrap;
+    color:rgba(237,230,214,.028);
+  }
+  .ghostword .outline{
+    color:transparent; -webkit-text-stroke:1.5px rgba(217,164,65,.34);
+  }
+  .readouts{
+    position:relative; z-index:2; display:flex; flex-wrap:wrap; gap:0; justify-content:flex-end;
+    margin-bottom:34px;
+  }
+  .ro{
+    border:1px solid var(--gold-line); padding:9px 14px 10px; margin-left:-1px; background:rgba(10,16,30,.72);
+    min-width:172px;
+  }
+  .ro .k{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.26em; color:var(--slate); margin-bottom:3px}
+  .ro .v{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--paper); letter-spacing:.02em}
+  .ro .v .ok{color:var(--allow)}
+  @media (max-width:760px){ .readouts{justify-content:flex-start} .ro{min-width:0; flex:1 1 42%} }
+  .hero-main{position:relative; z-index:2; display:grid; grid-template-columns:1fr auto; gap:26px; align-items:end}
+  @media (max-width:760px){ .hero-main{grid-template-columns:1fr} }
+  h1{
+    margin:0; font-weight:800; letter-spacing:-.015em; line-height:1.0;
+    font-size:clamp(46px,7.6vw,98px); text-transform:none;
+  }
+  h1 .it{font-family:Fraunces,serif; font-style:italic; font-weight:500; color:var(--gold-2); letter-spacing:0}
+  .lede{color:var(--paper-dim); font-size:16px; max-width:37em; margin:22px 0 0; line-height:1.62}
+  .lede strong{color:var(--paper)}
+  .coin{
+    position:relative; width:178px; height:178px; border-radius:50%; overflow:hidden; flex:none;
+    transform:translateY(26px);
+  }
+  .coin img{width:100%; height:100%; display:block}
+  .coin::after{
+    content:""; position:absolute; inset:-25%;
+    background:linear-gradient(115deg, transparent 42%, rgba(240,190,92,.30) 50%, transparent 58%);
+    transform:translateX(-95%); animation:glint 7.5s ease-in-out infinite;
+  }
+  @keyframes glint{ 0%,68%{transform:translateX(-95%)} 86%,100%{transform:translateX(95%)} }
+  @media (max-width:760px){ .coin{width:118px; height:118px; transform:none; order:-1} }
+  .commit-strip{
+    position:relative; z-index:2; margin-top:44px; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:13px 0; display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;
+  }
+  .commit-strip .cap{font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.24em; color:var(--slate); padding-top:3px; flex:none}
+  .commit-val{font-family:"IBM Plex Mono",monospace; font-size:12.5px; word-break:break-all; color:var(--gold-2); line-height:1.55; flex:1; min-width:260px}
+  .copy-btn{
+    flex:none; background:none; border:1px solid var(--line); color:var(--paper-dim);
+    border-radius:2px; padding:5px 11px; font-size:11.5px; cursor:pointer; font-family:"IBM Plex Mono",monospace; letter-spacing:.06em;
+  }
+  .copy-btn:hover{border-color:var(--gold); color:var(--gold-2)}
+  .commit-note{width:100%; font-size:12.5px; color:var(--taupe); margin:2px 0 0}
+
+  /* ————— record sections ————— */
+  .record{position:relative; margin-top:58px}
+  .vlabel{
+    position:absolute; left:-46px; top:6px; writing-mode:vertical-rl; transform:rotate(180deg);
+    font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.34em; color:var(--slate);
+  }
+  @media (max-width:1260px){ .vlabel{display:none} }
+  .row-sec{border-top:1px solid var(--line); padding:30px 0 34px; display:grid; grid-template-columns:64px 300px 1fr; gap:22px}
+  @media (max-width:900px){ .row-sec{grid-template-columns:44px 1fr} .row-body{grid-column:2} }
+  .idx{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--gold); padding-top:7px}
+  .row-head h2{margin:0; font-weight:800; font-size:24px; letter-spacing:.01em; line-height:1.16}
+  .row-head p{color:var(--taupe); font-size:14px; margin:9px 0 0; line-height:1.6; max-width:19em}
+  .row-body{min-width:0}
+
+  label.f{display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.2em; color:var(--slate); margin:0 0 7px}
+  input[type=number], select{
+    background:var(--ink-3); border:1px solid var(--line); color:var(--paper);
+    border-radius:2px; padding:11px 12px; font-size:15px; font-family:Archivo,sans-serif;
+  }
+  input[type=number]{width:150px}
+  input:disabled, select:disabled{opacity:.4}
+  .chips{display:flex; flex-wrap:wrap; gap:7px; margin-top:2px}
+  .chip{
+    display:inline-flex; align-items:center; gap:7px; cursor:pointer; user-select:none;
+    border:1px solid var(--line); border-radius:2px; padding:7px 12px; font-size:13.5px; color:var(--paper-dim);
+    background:var(--ink-3); transition:border-color .15s, color .15s;
+  }
+  .chip input{accent-color:var(--block); margin:0}
+  .chip:has(input:checked){border-color:rgba(224,104,79,.65); color:#F2BBA9; background:rgba(224,104,79,.07)}
+  .chip:has(input:disabled){opacity:.4; cursor:default}
+  .btn{
+    appearance:none; cursor:pointer; border-radius:2px;
+    font-family:Archivo,sans-serif; font-weight:600; font-size:14.5px; letter-spacing:.04em; padding:12px 24px;
+    background:var(--gold); color:#181204; border:1px solid var(--gold); transition:background .15s, transform .08s;
+  }
+  .btn:hover{background:var(--gold-2)}
+  .btn:active{transform:translateY(1px)}
+  .btn:disabled{opacity:.5; cursor:wait}
+  .btn.ghost{background:none; border:1px solid var(--line); color:var(--paper-dim); font-weight:500}
+  .btn.ghost:hover{border-color:var(--gold); color:var(--gold-2); background:none}
+  .sealed-note{display:none; margin-top:16px; color:var(--paper-dim); font-size:14px; border-left:2px solid var(--gold); padding-left:13px}
+  .sealed-note .mono{color:var(--gold-2); font-size:12.5px}
+  .sealed-note.show{display:block}
+
+  .presets{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:18px}
+  .preset{
+    background:none; border:1px solid var(--line); color:var(--paper-dim); cursor:pointer;
+    border-radius:2px; padding:8px 13px; font-size:13px; font-family:"IBM Plex Mono",monospace;
+  }
+  .preset:hover{border-color:var(--gold); color:var(--gold-2)}
+  .attack-form{display:flex; flex-wrap:wrap; gap:14px; align-items:flex-end}
+  .attack-form .grow{flex:1; min-width:170px}
+  .attack-form select{width:100%}
+
+  .proving{display:none; align-items:center; gap:10px; color:var(--gold-2); font-size:14px; margin-top:18px}
+  .proving.show{display:flex}
+  .proving .spin{
+    width:15px; height:15px; border-radius:50%; flex:none;
+    border:2px solid rgba(217,164,65,.3); border-top-color:var(--gold);
+    animation:rot .8s linear infinite;
+  }
+  @keyframes rot{to{transform:rotate(360deg)}}
+
+  #result{margin-top:22px; display:none}
+  #result.show{display:block}
+  .band{
+    position:relative; border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:20px 4px 18px; margin-top:6px;
+  }
+  .band.allow{background:linear-gradient(90deg, rgba(111,191,138,.08), transparent 55%)}
+  .band.block{background:linear-gradient(90deg, rgba(224,104,79,.09), transparent 55%)}
+  .band-word{font-weight:800; font-size:clamp(38px,5.4vw,58px); letter-spacing:.01em; line-height:1}
+  .band.allow .band-word{color:var(--allow)} .band.block .band-word{color:var(--block)}
+  .stamp{
+    position:absolute; top:-17px; right:8px; padding:4px 14px 6px; background:var(--ink);
+    font-family:"IBM Plex Mono",monospace; font-weight:500; font-size:15px; letter-spacing:.18em;
+    border:2px solid currentColor; border-radius:2px; transform:rotate(-6deg); pointer-events:none;
+  }
+  .stamp.go{animation:stampIn .45s cubic-bezier(.2,1.6,.4,1) both}
+  @keyframes stampIn{from{transform:scale(1.7) rotate(-14deg); opacity:0} to{transform:scale(1) rotate(-6deg); opacity:1}}
+  .stamp.allow{color:var(--allow)} .stamp.block{color:var(--block)}
+  .verdict-rule{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.18em; color:var(--slate); margin:12px 0 4px}
+  .verdict-reason{font-size:16px; margin:0 0 14px; max-width:38em; color:var(--paper)}
+  .tags{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:13px}
+  .tag{
+    font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.05em; border-radius:2px; padding:5px 10px;
+    border:1px solid var(--line); color:var(--taupe); display:inline-flex; align-items:center; gap:6px;
+  }
+  .tag.ok{border-color:rgba(111,191,138,.5); color:#A9DDBB}
+  .tag.pending{border-color:rgba(217,164,65,.5); color:var(--gold-2)}
+  .tag.fail{border-color:rgba(224,104,79,.5); color:#F2BBA9}
+  .sig{font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--taupe); word-break:break-all; line-height:1.65}
+  .sig b{color:var(--paper-dim); font-weight:500}
+  .verify-line{margin-top:12px; font-size:13.5px; color:var(--taupe)}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px}
+  th, td{padding:11px 12px 11px 0; text-align:left; border-bottom:1px solid var(--line-soft); vertical-align:top}
+  th{font-family:"IBM Plex Mono",monospace; color:var(--slate); font-weight:500; font-size:10.5px; letter-spacing:.2em}
+  tr:last-child td{border-bottom:none}
+  td.dec{font-weight:800; letter-spacing:.05em}
+  td.dec.allow{color:var(--allow)} td.dec.block{color:var(--block)}
+  td .mono, .mono{font-family:"IBM Plex Mono",monospace; font-size:12px}
+  .empty-row td{color:var(--taupe); padding:22px 0}
+  .ledger-wrap{overflow-x:auto}
+
+  .reveal-out{display:none; margin-top:15px; font-size:15px; color:var(--paper-dim); border-left:2px solid var(--gold); padding-left:13px}
+  .reveal-out.show{display:block}
+  .reveal-out .mono{color:var(--gold-2); font-size:12.5px}
+
+  /* ————— attestation footer ————— */
+  footer{margin-top:64px; border-top:1px solid var(--gold-line); padding:26px 0 46px}
+  .attest{display:grid; grid-template-columns:1fr auto; gap:22px; align-items:start}
+  @media (max-width:760px){ .attest{grid-template-columns:1fr} }
+  .attest .rows{font-size:13.5px; color:var(--taupe); line-height:1.75}
+  .attest .rows .mono{font-size:11.5px; color:var(--slate)}
+  .sigline{margin-top:14px; display:flex; gap:26px; flex-wrap:wrap; align-items:flex-end}
+  .sigbox{border-bottom:1px solid var(--line); padding-bottom:5px; min-width:210px}
+  .sigbox .who{font-family:Fraunces,serif; font-style:italic; font-size:17px; color:var(--paper)}
+  .sigbox .cap{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.24em; color:var(--slate); margin-top:4px}
+  footer .fine{margin-top:22px; font-size:12.5px; color:var(--slate); line-height:1.7; max-width:62em}
+  footer .fine .mono{font-size:11.5px}
+
+  .rv{opacity:0; transition:opacity .45s ease}
+  .rv.in{opacity:1}
+  @media (prefers-reduced-motion: reduce){
+    .coin::after, .proving .spin{animation:none}
+    .stamp.go{animation:none}
+    .rv{opacity:1; transform:none; transition:none}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="wordmark"><img src="logo-coin.svg" alt="OATHKEEPER seal">OATHKEEPER</div>
+    <div class="top-right">
+      <span class="top-meta">ZKVERIFY TESTNET · GROTH16 · POSEIDON</span>
+      <span class="live-dot"><span class="dot warm" id="liveDot"></span><span id="liveText">waking the agent…</span></span>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="ghostword" aria-hidden="true">SEA<span class="outline">LED</span></div>
+
+    <div class="readouts" aria-label="Live instrument readouts">
+      <div class="ro"><div class="k">COMMITMENT</div><div class="v" id="roCommit">…</div></div>
+      <div class="ro"><div class="k">CIRCUIT</div><div class="v">GROTH16 · 516 CONSTRAINTS</div></div>
+      <div class="ro"><div class="k">VERIFIED ON</div><div class="v">ZKVERIFY <span class="ok">●</span> TESTNET</div></div>
+      <div class="ro"><div class="k">THE RULES</div><div class="v">SEALED — NEVER SHOWN</div></div>
+    </div>
+
+    <div class="hero-main">
+      <div>
+        <h1>Proved,<br>not <span class="it">promised.</span></h1>
+        <p class="lede">Give an AI agent money and you must give it rules — a spending cap, a list of forbidden categories. Publish the rules and attackers get a map. Hide them and nobody can verify the agent obeyed. <strong>OATHKEEPER ends the dilemma:</strong> the rules are sealed into one cryptographic commitment, and every decision the agent makes carries a zero-knowledge proof — verified on zkVerify — that the decision is exactly the one the sealed rules force.</p>
+      </div>
+      <div class="coin" aria-hidden="true"><img src="logo-coin.svg" alt=""></div>
+    </div>
+
+    <div class="commit-strip">
+      <span class="cap">POSEIDON COMMITMENT — THE POLICY AS THE WORLD SEES IT</span>
+      <span class="commit-val" id="commitment">…</span>
+      <button class="copy-btn" id="copyCommit" type="button">COPY</button>
+      <p class="commit-note">The cap, the block list and the salt appear in no page, proof, or public signal. Try to find them.</p>
+    </div>
+  </div>
+
+  <div class="record">
+    <span class="vlabel">THE RECORD</span>
+
+    <section class="row-sec rv" id="owner">
+      <div class="idx">01</div>
+      <div class="row-head">
+        <h2>Seal your rules</h2>
+        <p>You are the owner. Set the mandate your agent must live by — then seal it. The values leave this form and are never shown again; only the commitment survives.</p>
+      </div>
+      <div class="row-body">
+        <div style="display:flex; flex-wrap:wrap; gap:22px; align-items:flex-end">
+          <div>
+            <label class="f" for="limit">PER-TRANSACTION CAP (USD)</label>
+            <input type="number" id="limit" value="50" min="0.01" step="0.01">
+          </div>
+          <div style="flex:1; min-width:240px">
+            <label class="f">FORBIDDEN CATEGORIES</label>
+            <div class="chips" id="blockChips"></div>
+          </div>
+          <button class="btn" id="sealBtn" type="button">Seal the policy</button>
+        </div>
+        <p class="sealed-note" id="sealedNote">Sealed. The form above is wiped and locked — the commitment at the top of this page is now the only public trace of your rules: <span class="mono" id="sealedCommit"></span></p>
+      </div>
+    </section>
+
+    <section class="row-sec rv" id="attacker">
+      <div class="idx">02</div>
+      <div class="row-head">
+        <h2>Try to break it</h2>
+        <p>Now you are the attacker — a prompt injection, a rogue tool call, a careless user. You know a policy exists. You do not know the cap or the block list. Spend the agent's money anyway.</p>
+      </div>
+      <div class="row-body">
+        <div class="presets" id="presets"></div>
+        <div class="attack-form">
+          <div>
+            <label class="f" for="amount">AMOUNT (USD)</label>
+            <input type="number" id="amount" value="60" min="0.01" step="0.01">
+          </div>
+          <div class="grow">
+            <label class="f" for="category">CATEGORY</label>
+            <select id="category"></select>
+          </div>
+          <button class="btn ghost" id="evalBtn" type="button">Attempt transaction</button>
+        </div>
+        <div class="proving" id="proving"><span class="spin"></span><span>Deciding and generating the zero-knowledge proof…</span></div>
+        <div id="result"></div>
+      </div>
+    </section>
+
+    <section class="row-sec rv" id="ledger">
+      <div class="idx">03</div>
+      <div class="row-head">
+        <h2>The ledger</h2>
+        <p>Every decision, its public signals, and its proof — recorded as it happened. Nothing here reveals the rules; everything here can be checked against them.</p>
+      </div>
+      <div class="row-body">
+        <div class="ledger-wrap">
+          <table>
+            <thead><tr><th>TIME (UTC)</th><th>ATTEMPT</th><th>DECISION</th><th>RULE</th><th>ZKVERIFY</th><th>PROOF</th></tr></thead>
+            <tbody id="auditBody"><tr class="empty-row"><td colspan="6">No attempts yet. Be the first to try.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="row-sec rv" id="reveal">
+      <div class="idx">04</div>
+      <div class="row-head">
+        <h2>Open the seal</h2>
+        <p>Judges should not have to trust that a real policy ever existed. This deliberate owner reveal — a demo feature, off in production — discloses the sealed rules so you can audit every verdict above against them.</p>
+      </div>
+      <div class="row-body">
+        <button class="btn ghost" id="revealBtn" type="button">Reveal the sealed policy</button>
+        <div class="reveal-out" id="revealOut"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="attest">
+      <div>
+        <div class="rows">
+          ATTESTED — every verdict on this page is backed by a Groth16 proof (Circom 2, BN128, snarkjs), submitted to <a href="https://zkverify.io" target="_blank" rel="noopener">zkVerify</a> through the Kurier API and polled to finalization.<br>
+          VERIFY IT YOURSELF — take any proof from the ledger and the <span class="mono">verification_key.json</span> file and check them with plain snarkjs. No trust in this server required.
+        </div>
+        <div class="sigline">
+          <div class="sigbox"><div class="who">Oathkeeper, by proof</div><div class="cap">THE AGENT</div></div>
+          <div class="sigbox"><div class="who">zkVerify, by finality</div><div class="cap">THE WITNESS</div></div>
+          <div class="sigbox"><div class="who">19 Nov 2026</div><div class="cap">DATE OF RECORD</div></div>
+        </div>
+      </div>
+      <img src="logo-mark.svg" width="86" height="86" alt="OATHKEEPER mark">
+    </div>
+    <p class="fine">Honest note: the Groth16 keys come from a local development powers-of-tau ceremony, the flow the official zkVerify tutorials document; a production deployment would use a multi-party ceremony. The circuit constraints — the part that makes a forbidden decision unprovable — are unaffected. This public mirror runs the identical policy engine and circuit entirely in your browser — same code, same proving keys; the production agent runs it server-side. Built for the zkVerify Agent Games, Wildcard track. <a href="https://github.com/Revaaa28/oathkeeper" target="_blank" rel="noopener">Source on GitHub</a> · #AgentGames</p>
+  </footer>
+
+</div>
+
+<script src="js/crypto.js"></script>
+<script src="js/snarkjs.min.js"></script>
+<script src="js/engine.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const CATS = ["groceries","games","gambling","subscriptions","software","transfers","dining","other"];
+const DEFAULT_BLOCKED = ["gambling","subscriptions"];
+const PRESETS = [
+  {label:"$30 · groceries", amount:30, category:"groceries"},
+  {label:"$60 · groceries", amount:60, category:"groceries"},
+  {label:"$10 · gambling", amount:10, category:"gambling"},
+  {label:"$20 · subscriptions", amount:20, category:"subscriptions"},
+  {label:"$49.99 · games", amount:49.99, category:"games"},
+  {label:"$50 · dining", amount:50, category:"dining"}
+];
+let commitment = null;
+
+function shortHash(h){ return h && h.length > 18 ? h.slice(0,10) + "…" + h.slice(-8) : h; }
+function money(c){ return "$" + (c/100).toFixed(2); }
+function setCommitment(c){
+  commitment = c;
+  $("commitment").textContent = c;
+  $("roCommit").textContent = shortHash(c);
+}
+
+function buildChips(){
+  $("blockChips").innerHTML = CATS.map(c =>
+    '<label class="chip"><input type="checkbox" value="' + c + '"' +
+    (DEFAULT_BLOCKED.includes(c) ? " checked" : "") + "> " + c + "</label>").join("");
+  $("category").innerHTML = CATS.map(c => '<option value="' + c + '">' + c + "</option>").join("");
+  $("category").value = "groceries";
+  $("presets").innerHTML = PRESETS.map((p,i) =>
+    '<button class="preset" type="button" data-i="' + i + '">' + p.label + "</button>").join("");
+  document.querySelectorAll(".preset").forEach(b => b.addEventListener("click", () => {
+    const p = PRESETS[+b.dataset.i];
+    $("amount").value = p.amount; $("category").value = p.category;
+    evaluate();
+  }));
+}
+
+async function loadState(){
+  try{
+    const s = await (await fetch("/api/state")).json();
+    setCommitment(s.commitment);
+    $("liveDot").className = "dot";
+    $("liveText").textContent = s.kurier.configured
+      ? "agent live · zkVerify connected via Kurier"
+      : "agent live · proofs verified locally (Kurier pending)";
+  }catch(e){
+    $("liveText").textContent = "agent unreachable — retrying";
+    setTimeout(loadState, 4000);
+  }
+}
+
+async function loadAudit(){
+  try{
+    const data = await (await fetch("/api/audit")).json();
+    const rows = data.entries || [];
+    if(!rows.length) return;
+    $("auditBody").innerHTML = rows.map(r => {
+      const k = r.kurier || {};
+      const ks = k.status === "Finalized" ? '<span style="color:#A9DDBB">Finalized</span>'
+        : k.status === "not_configured" ? '<span title="Proof verified locally with snarkjs">local ✓</span>'
+        : k.status ? '<span style="color:var(--gold-2)">' + k.status + "</span>" : "—";
+      return "<tr><td class='mono'>" + r.ts.slice(11,19) + "</td>" +
+        "<td>" + money(r.amountCents) + " · " + r.category + "</td>" +
+        "<td class='dec " + (r.decision === "ALLOW" ? "allow" : "block") + "'>" + r.decision + "</td>" +
+        "<td>" + r.rule + "</td><td>" + ks + "</td>" +
+        "<td><a href='#' data-proof='" + r.id + "'>verify</a></td></tr>";
+    }).join("");
+  }catch(e){ /* keep last render */ }
+}
+
+$("copyCommit").addEventListener("click", async () => {
+  try{ await navigator.clipboard.writeText(commitment || ""); $("copyCommit").textContent = "COPIED"; }
+  catch(e){ $("copyCommit").textContent = "SELECT & COPY"; }
+  setTimeout(() => $("copyCommit").textContent = "COPY", 1600);
+});
+
+$("sealBtn").addEventListener("click", async () => {
+  const limitUsd = parseFloat($("limit").value);
+  const blockedCategories = [...document.querySelectorAll("#blockChips input:checked")].map(i => i.value);
+  if(!(limitUsd > 0)){ alert("Enter a cap above zero."); return; }
+  $("sealBtn").disabled = true; $("sealBtn").textContent = "Sealing…";
+  try{
+    const r = await (await fetch("/api/policy", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({limitUsd, blockedCategories})
+    })).json();
+    if(r.error) throw new Error(r.error);
+    setCommitment(r.commitment);
+    $("sealedCommit").textContent = shortHash(r.commitment);
+    $("sealedNote").classList.add("show");
+    $("limit").value = ""; $("limit").disabled = true;
+    document.querySelectorAll("#blockChips input").forEach(i => { i.checked = false; i.disabled = true; });
+    $("sealBtn").textContent = "Sealed";
+    $("result").classList.remove("show"); $("result").innerHTML = "";
+    loadAudit();
+  }catch(e){
+    alert("Sealing failed: " + e.message);
+    $("sealBtn").disabled = false; $("sealBtn").textContent = "Seal the policy";
+  }
+});
+
+async function evaluate(){
+  const amountUsd = parseFloat($("amount").value);
+  const category = $("category").value;
+  if(!(amountUsd > 0)){ alert("Enter an amount above zero."); return; }
+  $("evalBtn").disabled = true;
+  $("proving").classList.add("show");
+  $("result").classList.remove("show");
+  try{
+    const r = await (await fetch("/api/evaluate", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({amountUsd, category})
+    })).json();
+    if(r.error) throw new Error(r.error);
+    renderResult(r);
+    loadAudit();
+  }catch(e){
+    $("result").innerHTML = '<div class="band block"><div class="band-word">FAILED</div><p class="verdict-reason">The attempt failed to complete: ' + e.message + '. On a cold free-tier host the first proof can take a while — try once more.</p></div>';
+    $("result").classList.add("show");
+  }finally{
+    $("proving").classList.remove("show");
+    $("evalBtn").disabled = false;
+  }
+}
+$("evalBtn").addEventListener("click", evaluate);
+
+function renderResult(r){
+  const allow = r.decision === "ALLOW";
+  const k = r.kurier || {};
+  const localTag = r.verifiedLocally
+    ? '<span class="tag ok">GROTH16 PROOF · VERIFIED LOCALLY</span>'
+    : '<span class="tag fail">PROOF MISSING</span>';
+  const kurierTag = k.status === "Finalized"
+    ? '<span class="tag ok">ZKVERIFY · FINALIZED</span>'
+    : k.status === "not_configured"
+    ? '<span class="tag pending">ZKVERIFY · VIA KURIER (PENDING KEY)</span>'
+    : '<span class="tag pending">ZKVERIFY · ' + (k.status || "QUEUED").toUpperCase() + "</span>";
+  const sig = r.publicSignals || [];
+  $("result").innerHTML =
+    '<div class="band ' + (allow ? "allow" : "block") + '">' +
+      '<div class="stamp ' + (allow ? "allow" : "block") + ' go">' + r.decision + "</div>" +
+      '<div class="band-word">' + r.decision + "</div>" +
+      '<p class="verdict-rule">RULE FIRED — ' + String(r.rule).toUpperCase() + "</p>" +
+      '<p class="verdict-reason">' + r.reason + "</p>" +
+      '<div class="tags">' + localTag + kurierTag + "</div>" +
+      '<div class="sig"><b>Public signals — all anyone ever learns:</b><br>' +
+      "amount " + sig[0] + " cents · category code " + sig[1] + " · decision " + sig[2] + " (1 = ALLOW, 0 = BLOCK)<br>" +
+      "commitment " + sig[3] + "</div>" +
+      '<p class="verify-line">Do not trust this page. <a href="#" data-proof="' + r.id + '">Take the proof</a>, ' +
+      'the <a href="verification_key.json" target="_blank" rel="noopener">verification key</a>, and check it with snarkjs yourself.</p>' +
+    "</div>";
+  $("result").classList.add("show");
+}
+
+$("revealBtn").addEventListener("click", async () => {
+  try{
+    const r = await (await fetch("/api/reveal", {method:"POST"})).json();
+    if(r.error) throw new Error(r.error);
+    $("revealOut").innerHTML =
+      "The sealed policy was: cap <b>$" + Number(r.limitUsd).toFixed(2) + "</b> per transaction; forbidden: <b>" +
+      (r.blockedCategories.length ? r.blockedCategories.join(", ") : "none") + "</b>.<br>" +
+      'Commitment <span class="mono">' + r.commitment + '</span> — recompute Poseidon(cap, block list, salt) from the source and it matches. Every verdict in the ledger follows from exactly these rules.';
+    $("revealOut").classList.add("show");
+  }catch(e){ alert("Reveal failed: " + e.message); }
+});
+
+buildChips();
+loadState();
+loadAudit();
+setInterval(loadAudit, 15000);
+
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); }
+}), {threshold:.08});
+document.querySelectorAll(".rv").forEach(el => io.observe(el));
+setTimeout(() => document.querySelectorAll(".rv").forEach(el => el.classList.add("in")), 1200);
+</script>
+</body>
+</html>
