@@ -4,7 +4,7 @@
 
 **The agent that can prove it obeyed you — without revealing your rules.**
 
-**Live demo: [revaaa28.github.io/oathkeeper](https://revaaa28.github.io/oathkeeper/)** — seal a policy, try to break it, watch the proof. This mirror runs the identical policy engine and circuit entirely in your browser (same code, same proving keys); the production agent runs it server-side. (The original Render host is suspended until Dec 1 — its free-tier hours ran out during judging.)
+**Live demo: [oathkeeper-production.up.railway.app](https://oathkeeper-production.up.railway.app)** — seal a policy, try to break it, watch the proof. This is the full server demo, redeployed on Railway after the original Render host was suspended mid-judging (its free-tier hours ran out; it revives Dec 1). A static mirror of the same demo — identical policy engine and circuit, running entirely in your browser — is on [GitHub Pages](https://revaaa28.github.io/oathkeeper/).
 
 Built for the [zkVerify Agent Games](https://agentgames.zkverify.io/) — Wildcard track.
 
