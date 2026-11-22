@@ -4,7 +4,7 @@
 
 **The agent that can prove it obeyed you — without revealing your rules.**
 
-**Live demo: [oathkeeper-3btp.onrender.com](https://oathkeeper-3btp.onrender.com)** — seal a policy, try to break it, watch the proof.
+**Live demo: [revaaa28.github.io/oathkeeper](https://revaaa28.github.io/oathkeeper/)** — seal a policy, try to break it, watch the proof. This mirror runs the identical policy engine and circuit entirely in your browser (same code, same proving keys); the production agent runs it server-side. (The original Render host is suspended until Dec 1 — its free-tier hours ran out during judging.)
 
 Built for the [zkVerify Agent Games](https://agentgames.zkverify.io/) — Wildcard track.
 
